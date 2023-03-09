@@ -38,11 +38,7 @@ unsigned long previousMillis = 0;
 
 /*Usando roteador modo STA*/
 String sta_ssid = "Frajola";      // set Wifi networks you want to connect to Router
-String sta_password = "dd34e56134";  // set password for Wifi networks
-
-/* Usando o ESP como ponto de acesso procure a rede RobotoGuido seguido do id do ESp8266*/
-//String sta_ssid = "";      // set Wifi networks you want to connect to Router
-//String sta_password = "";  // set password for Wifi networks
+String sta_password = "1dd34e56134";  // set password for Wifi networks
 
 void setup(){
   Serial.begin(115200);    // set up Serial library at 115200 bps
@@ -102,8 +98,9 @@ void setup(){
     Serial.println("");
     Serial.println("WiFi failed connected to " + sta_ssid);
     Serial.println("");
-    Serial.println("*WiFi-AP-Mode*");
-    Serial.print("AP IP address: ");
+    Serial.println("Entrando em WiFi-AP-Mode*");
+    Serial.print(chip_id);
+    Serial.print(" - AP IP address: ");
     Serial.println(myIP);
     digitalWrite(wifiLedPin, LOW);   // Wifi LED on when status as AP mode
     delay(2000);
