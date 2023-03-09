@@ -21,7 +21,7 @@ Drive drive(IN1, IN2, IN3, IN4);
 
 const int buzPin = D2;  /* GPIO16(D2)  */
 const int ledPin = D13; /* GPIO14(D2) set as LED pin */
-const int wifiLedPin = D9;  /* LED ligado se NodeMCU conectado no WiFi em STA mode */
+const int wifiLedPin = LED_BUILTIN;  /* LED ligado se NodeMCU conectado no WiFi em STA mode */
 
 String command;
 int SPEED = 50;  /* Variave responsavel pela velocidade dos motores min:50, max:1023. */
@@ -38,7 +38,7 @@ unsigned long previousMillis = 0;
 
 /*Usando roteador modo STA*/
 String sta_ssid = "Frajola";      // set Wifi networks you want to connect to Router
-String sta_password = "1dd34e56134";  // set password for Wifi networks
+String sta_password = "dd34e56134";  // set password for Wifi networks
 
 void setup(){
   Serial.begin(115200);    // set up Serial library at 115200 bps
@@ -173,7 +173,6 @@ void Forward(){
                 }else{
                 drive.turnLeft(50);
                 obstacle = ping();
-                turn = 1;      
                 }
             }
     drive.moveForward(50);
@@ -225,9 +224,7 @@ drive.stopMoving();
 
 // function to beep a buzzer
 void BeepHorn(){
-  int var = 0;
-   while (var < 3) {
-      int k = random(3000,1000);
+    int k = random(1000,2000);
     for (int i = 0; i <=  random(100,2000); i++){
         tone(buzPin, k+(-i*2));          
         delay(random(.9,2));             
@@ -235,10 +232,8 @@ void BeepHorn(){
     for (int i = 0; i <= random(100,1000); i++){
         tone(buzPin, k + (i * 10));          
         delay(random(.9,2));             
-    }
-    tone (buzPin,100,100); 
-  var++;
-}
+    } 
+    noTone(buzPin);     
 }
 
 /* Funcao de Autorote*/
