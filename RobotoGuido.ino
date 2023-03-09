@@ -162,7 +162,7 @@ void Forward(){
   obstacle = ping(0);
   if (obstacle > 10){ //se não encontrou nehum obstaculo a menos de 10cm segue o barco...
     drive.moveForward(SPEED);
-  }else{ //se não para pensa meio segundo sorteia um lado vira no eixo e só continua quando encontra caminho livre.
+  }else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua quando encontra caminho livre.
     drive.stopMoving();
     delay(500);
     tone(buzPin, 3000, 20);  
@@ -274,3 +274,5 @@ int ping(){
   delay(100);
   return distance;
 } // END Ping
+
+//FIM
