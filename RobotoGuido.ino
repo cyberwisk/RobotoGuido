@@ -116,8 +116,8 @@ void setup(){
 
 
 void loop() {
-    server.handleClient();        // listen for HTTP requests from clients
-      command = server.arg("State");          // check HTPP request, if has arguments "State" then saved the value
+    server.handleClient();        // escuta os comandos http dos clientes
+      command = server.arg("State");          //HTPP request, com os argumentos passados no "State"
       if (command == "0") SPEED = 0;
       else if (command == "1") SPEED = 55;
       else if (command == "2") SPEED = 70;
@@ -147,35 +147,38 @@ void loop() {
 
 // function prototypes for HTTP handlers
 void HTTP_handleRoot(void){
-  server.send(200, "text/html", "<h2>RobotoGuiodo OK </h2>"); //Send web page in index.h
-  //server.send(200, "text/html", MAIN_page); //Send web page in index.h
+  server.send(200, "text/html", "<h2>RobotoGuiodo OK </h2>");
+  //server.send(200, "text/html", MAIN_page); //pagina index.h retirada por provocar atraso nos comandos.
   if( server.hasArg("State") ){
   Serial.println(server.arg("State"));
   }
 }
 void handleNotFound(){
   server.send(404, "text/plain", "404: Not found");
+  drive.stopMoving();
 }
 
 // function to move forward
 void Forward(){
-  obstacle = ping(0);
+  obstacle = ping();
   if (obstacle > 10){ //se não encontrou nehum obstaculo a menos de 10cm segue o barco...
     drive.moveForward(SPEED);
-  }else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua quando encontra caminho livre.
-    drive.stopMoving();
-    delay(500);
-    tone(buzPin, 3000, 20);  
-    int turn = random(2);
-      while (obstacle < 10) {
-        if (turn = 1){
-        drive.turnRight(50);
-        }else{
-        drive.turnLeft(50);
-        turn = 1;      
-        }
-      obstacle = ping(0);
-      }
+  }else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua  na velocidade minima quando encontra caminho livre.
+        drive.stopMoving();
+        delay(500);
+        tone(buzPin, 3000, 20);  
+        int turn = random(2);
+            while (obstacle < 10) {
+                delay(100)
+                if (turn = 1){
+                drive.turnRight(50);
+                obstacle = ping();
+                }else{
+                drive.turnLeft(50);
+                obstacle = ping();
+                turn = 1;      
+                }
+            }
     drive.moveForward(50);
   }  
     Serial.print("Forward "); 
@@ -274,5 +277,3 @@ int ping(){
   delay(100);
   return distance;
 } // END Ping
-
-//FIM
