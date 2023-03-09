@@ -169,7 +169,7 @@ void Forward(){
         tone(buzPin, 3000, 20);  
         int turn = random(2);
             while (obstacle < 10) {
-                delay(100)
+                delay(100);
                 if (turn = 1){
                 drive.turnRight(50);
                 obstacle = ping();
