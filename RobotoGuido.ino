@@ -1,43 +1,46 @@
 /**********************************************************
     WiFi Robot Remote Control Mode
-    Usando a biblioteca ESP8266WiFi na versão 1.0 na pasta: ESP8266WiFi.zip
-    Usando a biblioteca ESP8266WebServer na versão 1.0 na pasta: ESP8266WebServer.zip
-    Usando a biblioteca Drive na versão 1.0.0 na pasta: Drive.zip
+    Usando as bibliotecas:
+    ESP8266WiFi na versão 1.0 na pasta do pj: ESP8266WiFi.zip
+    ESP8266WebServer na versão 1.0 na pasta do pj: ESP8266WebServer.zip
+    Drive na versão 1.0.0 na pasta do pj: Drive.zip
     Aurelio Monteiro Avanzi
     04/03/2023
  **********************************************************/ 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Drive.h>
-#include "index.h" //HTML do Controle
+#include "index.h" //HTML do Controle interno sem uso do APP, não estou usando por problemas de performance, fique a vontade para resolver...
 
 //Define L298N pin mappings
-const int IN1 = D7;
-const int IN2 = D6;
-const int IN3 = D4;
-const int IN4 = D3;
+const int IN1 = D7; /* GPIO13(D7) -> IN3   */
+const int IN2 = D6; /* GPIO12(D6) -> IN3   */
+const int IN3 = D4; /* GPIO4(D4)  -> IN3   */
+const int IN4 = D3; /* GPIO5(D3)  -> IN3   */
 Drive drive(IN1, IN2, IN3, IN4);
 
-const int buzPin = D2;
-const int ledPin = D13;      // D15/D3 set digital pin D8 as LED pin (use super bright LED) 
-const int wifiLedPin = D9;  // set digital pin D0 as indication, the LED turn on if NodeMCU connected to WiFi as STA mode
+const int buzPin = D2;  /* GPIO16(D2)  */
+const int ledPin = D13; /* GPIO14(D2) set as LED pin */
+const int wifiLedPin = D9;  /* LED ligado se NodeMCU conectado no WiFi em STA mode */
 
 String command;
-int SPEED = 50;        // 50 - 1023.
+int SPEED = 50;  /* Variave responsavel pela velocidade dos motores min:50, max:1023. */
 
 //Ping HC-SR04 ultrasonic distance sensor
-#define trigPin D8
-#define echoPin D10
+#define trigPin D8  /* GPIO0(D8) pino de saida do Ultrassom*/
+#define echoPin D10  /* GPIO15(D10)  pino de entrada do Ultrassom*/
 long duration, distance;
 int obstacle;
 
-ESP8266WebServer server(80);      // Create a webserver object that listens for HTTP request on port 80
+ESP8266WebServer server(80);      /* Cria um objeto servidor Web que escuta aa solicitações HTTP na porta 80 */
 
 unsigned long previousMillis = 0;
 
+/*Usando roteador modo STA*/
 String sta_ssid = "Frajola";      // set Wifi networks you want to connect to Router
 String sta_password = "dd34e56134";  // set password for Wifi networks
 
+/* Usando o ESP como ponto de acesso procure a rede RobotoGuido seguido do id do ESp8266*/
 //String sta_ssid = "";      // set Wifi networks you want to connect to Router
 //String sta_password = "";  // set password for Wifi networks
 
@@ -47,16 +50,16 @@ void setup(){
   Serial.println("*WiFi Robot Remote Control Mode*");
   Serial.println("--------------------------------------");
 
-  pinMode(buzPin, OUTPUT);      // sets the buzzer pin as an Output
-  pinMode(ledPin, OUTPUT);      // sets the LED pin as an Output
-  pinMode(wifiLedPin, OUTPUT);  // sets the Wifi LED pin as an Output
+  pinMode(buzPin, OUTPUT);      // seta o buzzer pin como saida
+  pinMode(ledPin, OUTPUT);      // seta o LED pin como saida
+  pinMode(wifiLedPin, OUTPUT);  // seta o Wifi LED pin como saida
+  pinMode(trigPin, OUTPUT);     // seta o trigger pin como saida
+  pinMode(echoPin, INPUT);      // seta o echo pin como saida
+  
   digitalWrite(buzPin, LOW);
   digitalWrite(ledPin, LOW);
   digitalWrite(wifiLedPin, HIGH);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);   
   
-  // set NodeMCU Wifi hostname based on chip mac address
   String chip_id = String(ESP.getChipId(), HEX);
   int i = chip_id.length()-4;
   chip_id = chip_id.substring(i);
@@ -131,11 +134,15 @@ void loop() {
       else if (command == "R") TurnRight();
       else if (command == "L") TurnLeft();
       else if (command == "G") ForwardLeft();
+      else if (command == "H") BackwardLeft();
       else if (command == "I") ForwardRight();
+      else if (command == "J") BackwardRight();
       else if (command == "S") Stop();
       else if (command == "V") BeepHorn();
       else if (command == "W") TurnLightOn();
       else if (command == "w") TurnLightOff();
+      else if (command == "A") AutoRoteOn();
+      else if (command == "a") AutoRoteOff();
 }
 
 // function prototypes for HTTP handlers
@@ -153,23 +160,21 @@ void handleNotFound(){
 // function to move forward
 void Forward(){
   obstacle = ping(0);
-  if (obstacle > 10){ //se não encontrou nehum obstaculo a menos de 10cm segue o bacro...
+  if (obstacle > 10){ //se não encontrou nehum obstaculo a menos de 10cm segue o barco...
     drive.moveForward(SPEED);
-  }
-  else{
+  }else{ //se não para pensa meio segundo sorteia um lado vira no eixo e só continua quando encontra caminho livre.
     drive.stopMoving();
     delay(500);
     tone(buzPin, 3000, 20);  
     int turn = random(2);
       while (obstacle < 10) {
-      obstacle = ping(0);
         if (turn = 1){
         drive.turnRight(50);
-        }
-        else{
+        }else{
         drive.turnLeft(50);
         turn = 1;      
         }
+      obstacle = ping(0);
       }
     drive.moveForward(50);
   }  
@@ -179,24 +184,21 @@ void Forward(){
     Serial.println(obstacle);
 }
 
-// function to move backward
 void Backward(){
   drive.moveBackward(SPEED);
   Serial.print("Backward "); 
   Serial.println(SPEED);
 }
 
-// function to turn right
-void TurnRight(){
-  drive.turnRight(SPEED);
-  Serial.print("TurnRight "); 
-  Serial.println(SPEED);
-}
-
-// function to turn left
 void TurnLeft(){
   drive.turnLeft(SPEED);
   Serial.print("TurnLeft "); 
+  Serial.println(SPEED);
+}
+
+void TurnRight(){
+  drive.turnRight(SPEED);
+  Serial.print("TurnRight "); 
   Serial.println(SPEED);
 }
 
@@ -204,9 +206,16 @@ void ForwardLeft(){
   drive.moveforwardLeft(SPEED);
 }
 
-// function to move forward right
+void BackwardLeft(){
+  drive.moveBackwardLeft(SPEED);
+}
+
 void ForwardRight(){
   drive.moveforwardRight(SPEED);
+}
+
+void BackwardRight(){
+  drive.moveBackwardRight(SPEED);
 }
 
 // function to stop motors
@@ -232,6 +241,14 @@ void BeepHorn(){
 }
 }
 
+/* Funcao de Autorote*/
+void AutoRoteOn(){
+  digitalWrite(ledPin, HIGH);
+}
+void AutoRoteOff(){
+  digitalWrite(ledPin, LOW);
+}
+
 // function to turn on LED
 void TurnLightOn(){
   digitalWrite(ledPin, HIGH);
@@ -246,7 +263,7 @@ void TurnLightOff(){
 // A velocidade do som e de 340 m/s ou 29 microssegundos por centimetro.
 // O ping e enviado para frente e reflete no objeto para encontrar a distancia
 // A distancia do objeto fica na metade da distancia percorrida.
-int ping(int mode){
+int ping(){
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
