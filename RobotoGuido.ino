@@ -136,6 +136,7 @@ void loop() {
       else if (command == "J") BackwardRight();
       else if (command == "S") Stop();
       else if (command == "V") BeepHorn();
+      else if (command == "v") noTone(buzPin);
       else if (command == "W") TurnLightOn();
       else if (command == "w") TurnLightOff();
       else if (command == "A") AutoRoteOn();
