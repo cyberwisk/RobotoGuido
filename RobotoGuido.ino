@@ -115,8 +115,8 @@ void setup(){
 void loop() {
     server.handleClient();        // escuta os comandos http dos clientes
       command = server.arg("State");          //HTPP request, com os argumentos passados no "State"
-      if (command == "0") SPEED = 0;
-      else if (command == "1") SPEED = 55;
+      if (command == "0") SPEED = 50;
+      else if (command == "1") SPEED = 60;
       else if (command == "2") SPEED = 70;
       else if (command == "3") SPEED = 90;
       else if (command == "4") SPEED = 200;
@@ -159,9 +159,13 @@ void handleNotFound(){
 // function to move forward
 void Forward(){
   obstacle = ping();
-  if (obstacle > 10){ //se não encontrou nehum obstaculo a menos de 10cm segue o barco...
+  if (obstacle > 20){ //se não encontrou nehum obstaculo a menos de 10cm segue o barco...
     drive.moveForward(SPEED);
-  }else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua  na velocidade minima quando encontra caminho livre.
+  } 
+  else if (obstacle > 20){
+    drive.moveForward(50);
+  }  
+  else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua  na velocidade minima quando encontra caminho livre.
         drive.stopMoving();
         delay(500);
         tone(buzPin, 3000, 20);  
