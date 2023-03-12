@@ -89,8 +89,12 @@ void setup(){
     Serial.println("*WiFi-STA-Mode*");
     Serial.print("IP: ");
     Serial.println(WiFi.localIP());
-    digitalWrite(wifiLedPin, HIGH);    // Wifi LED off when connected to Wifi as STA mode
-    delay(2000);
+    for(int i=0; i<5; i++){    // Wifi when connected
+      digitalWrite(wifiLedPin, HIGH);
+      tone(buzPin, 3000, 60);
+      delay(500);
+      digitalWrite(wifiLedPin, LOW);
+    }
   } else {
     WiFi.mode(WIFI_AP);
     WiFi.softAP(hostname.c_str());
@@ -102,8 +106,12 @@ void setup(){
     Serial.print(chip_id);
     Serial.print(" - AP IP address: ");
     Serial.println(myIP);
-    digitalWrite(wifiLedPin, LOW);   // Wifi LED on when status as AP mode
-    delay(2000);
+    for(int i=0; i<3; i++){    // Wifi when connected
+      digitalWrite(wifiLedPin, HIGH);
+      tone(buzPin, 1000, 60);
+      delay(500);
+      digitalWrite(wifiLedPin, LOW);
+    }
   }
 
   server.on ( "/", HTTP_handleRoot );       // call the 'handleRoot' function when a client requests URI "/"
