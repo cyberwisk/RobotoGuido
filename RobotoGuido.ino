@@ -20,17 +20,19 @@ const int IN4 = D3; /* GPIO5(D3)  -> IN3   */
 Drive drive(IN1, IN2, IN3, IN4);
 
 const int buzPin = D2;  /* GPIO16(D2)  */
-const int ledPin = D13; /* GPIO14(D2) set as LED pin */
+const int infraredPin = D13; /* GPIO14(D2) set asinfraredPin pin */
+
 const int wifiLedPin = LED_BUILTIN;  /* LED ligado se NodeMCU conectado no WiFi em STA mode */
 
 String command;
-int SPEED = 50;  /* Variave responsavel pela velocidade dos motores min:50, max:1023. */
+int SPEED = 65;  /* Variave responsavel pela velocidade dos motores min:50, max:1023. */
 
 //Ping HC-SR04 ultrasonic distance sensor
 #define trigPin D8  /* GPIO0(D8) pino de saida do Ultrassom*/
 #define echoPin D10  /* GPIO15(D10)  pino de entrada do Ultrassom*/
 long duration, distance;
 int obstacle;
+boolean infra = false;
 
 ESP8266WebServer server(80);      /* Cria um objeto servidor Web que escuta aa solicitações HTTP na porta 80 */
 
@@ -38,7 +40,7 @@ unsigned long previousMillis = 0;
 
 /*Usando roteador modo STA*/
 String sta_ssid = "Frajola";      // set Wifi networks you want to connect to Router
-String sta_password = "dd34e56134";  // set password for Wifi networks
+String sta_password = "1dd34e56134";  // set password for Wifi networks
 
 void setup(){
   Serial.begin(115200);    // set up Serial library at 115200 bps
@@ -47,13 +49,12 @@ void setup(){
   Serial.println("--------------------------------------");
 
   pinMode(buzPin, OUTPUT);      // seta o buzzer pin como saida
-  pinMode(ledPin, OUTPUT);      // seta o LED pin como saida
+  pinMode(infraredPin, INPUT);  // seta o infrared pin como Entrada
   pinMode(wifiLedPin, OUTPUT);  // seta o Wifi LED pin como saida
   pinMode(trigPin, OUTPUT);     // seta o trigger pin como saida
   pinMode(echoPin, INPUT);      // seta o echo pin como saida
   
   digitalWrite(buzPin, LOW);
-  digitalWrite(ledPin, LOW);
   digitalWrite(wifiLedPin, HIGH);
   
   String chip_id = String(ESP.getChipId(), HEX);
@@ -113,12 +114,10 @@ void setup(){
       digitalWrite(wifiLedPin, LOW);
     }
   }
-
   server.on ( "/", HTTP_handleRoot );       // call the 'handleRoot' function when a client requests URI "/"
   server.onNotFound ( HTTP_handleRoot );    // when a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
   server.begin();                           // actually start the server
 }
-
 
 void loop() {
     server.handleClient();        // escuta os comandos http dos clientes
@@ -149,6 +148,12 @@ void loop() {
       else if (command == "w") TurnLightOff();
       else if (command == "A") AutoRoteOn();
       else if (command == "a") AutoRoteOff();
+      infra = Infrared();
+      if (infra = false) {
+      // Serial.print("Infrared ");
+      //Serial.println(infra);
+      Stop();
+      }
 }
 
 // function prototypes for HTTP handlers
@@ -170,9 +175,6 @@ void Forward(){
   if (obstacle > 20){ //se não encontrou nehum obstaculo a menos de 10cm segue o barco...
     drive.moveForward(SPEED);
   } 
-  else if (obstacle > 20){
-    drive.moveForward(50);
-  }  
   else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua  na velocidade minima quando encontra caminho livre.
         drive.stopMoving();
         delay(500);
@@ -181,14 +183,14 @@ void Forward(){
             while (obstacle < 10) {
                 delay(100);
                 if (turn = 1){
-                drive.turnRight(50);
+                drive.turnRight(SPEED);
                 obstacle = ping();
                 }else{
-                drive.turnLeft(50);
+                drive.turnLeft(SPEED);
                 obstacle = ping();
                 }
             }
-    drive.moveForward(50);
+    drive.moveForward(70);
   }  
     Serial.print("Forward "); 
     Serial.println(SPEED);
@@ -251,20 +253,20 @@ void BeepHorn(){
 
 /* Funcao de Autorote*/
 void AutoRoteOn(){
-  digitalWrite(ledPin, HIGH);
+  Forward();
 }
 void AutoRoteOff(){
-  digitalWrite(ledPin, LOW);
+  Stop();
 }
 
 // function to turn on LED
 void TurnLightOn(){
-  digitalWrite(ledPin, HIGH);
+
 }
 
 // function to turn off LED
 void TurnLightOff(){
-  digitalWrite(ledPin, LOW);
+ 
 }
 
 // HC-SR04 ultrasonic distance sensor
@@ -282,3 +284,9 @@ int ping(){
   delay(100);
   return distance;
 } // END Ping
+
+boolean Infrared(){
+   // Serial.print("Infrared");
+   // Serial.println(infraredPin);
+    return analogRead(infraredPin);
+} //END Infrared
