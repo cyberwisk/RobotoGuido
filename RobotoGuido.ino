@@ -10,32 +10,30 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Drive.h>
-#include "index.h" //HTML do Controle interno sem uso do APP, não estou usando por problemas de performance, fique a vontade para resolver...
+//#include "index.h" //HTML do Controle interno sem uso do APP, não estou usando por problemas de performance, fique a vontade para resolver...
+
+ESP8266WebServer server(80);      /* Cria um objeto servidor Web que escuta aa solicitações HTTP na porta 80 */
 
 //Define L298N pin mappings
-const int IN1 = D7; /* GPIO13(D7) -> IN3   */
-const int IN2 = D6; /* GPIO12(D6) -> IN3   */
-const int IN3 = D4; /* GPIO4(D4)  -> IN3   */
-const int IN4 = D3; /* GPIO5(D3)  -> IN3   */
+#define IN1 D7 /* GPIO13(D7) -> IN3   */
+#define IN2 D6 /* GPIO12(D6) -> IN3   */
+#define IN3 D4 /* GPIO4(D4)  -> IN3   */
+#define IN4 D3 /* GPIO5(D3)  -> IN3   */
 Drive drive(IN1, IN2, IN3, IN4);
 
-const int buzPin = D2;  /* GPIO16(D2)  */
-const int infraredPin = D13; /* GPIO14(D2) set asinfraredPin pin */
+//Define anothers lin mappings
+#define buzPin D2 /* Analog(D2) */
+#define infraredPinL D13 /* GPIO14(D13) set asinfraredPin pin */
+#define infraredPinR D5 /* GPIO14(D5) set asinfraredPin pin */
+#define trigPin D9 /* GPIO0(D9) pino de saida do Ultrassom*/
+#define echoPin D10 /* GPIO15(D10)  pino de entrada do Ultrassom*/
 
 const int wifiLedPin = LED_BUILTIN;  /* LED ligado se NodeMCU conectado no WiFi em STA mode */
 
 String command;
 int SPEED = 65;  /* Variave responsavel pela velocidade dos motores min:50, max:1023. */
-
-//Ping HC-SR04 ultrasonic distance sensor
-#define trigPin D8  /* GPIO0(D8) pino de saida do Ultrassom*/
-#define echoPin D10  /* GPIO15(D10)  pino de entrada do Ultrassom*/
-long duration, distance;
 int obstacle;
-boolean infra = false;
-
-ESP8266WebServer server(80);      /* Cria um objeto servidor Web que escuta aa solicitações HTTP na porta 80 */
-
+long duration, distance;
 unsigned long previousMillis = 0;
 
 /*Usando roteador modo STA*/
@@ -49,12 +47,12 @@ void setup(){
   Serial.println("--------------------------------------");
 
   pinMode(buzPin, OUTPUT);      // seta o buzzer pin como saida
-  pinMode(infraredPin, INPUT);  // seta o infrared pin como Entrada
+  pinMode(infraredPinL, INPUT);  // seta o infrared pin como Entrada
+  pinMode(infraredPinR, INPUT);  // seta o infrared pin como Entrada
   pinMode(wifiLedPin, OUTPUT);  // seta o Wifi LED pin como saida
   pinMode(trigPin, OUTPUT);     // seta o trigger pin como saida
   pinMode(echoPin, INPUT);      // seta o echo pin como saida
-  
-  digitalWrite(buzPin, LOW);
+
   digitalWrite(wifiLedPin, HIGH);
   
   String chip_id = String(ESP.getChipId(), HEX);
@@ -148,17 +146,21 @@ void loop() {
       else if (command == "w") TurnLightOff();
       else if (command == "A") AutoRoteOn();
       else if (command == "a") AutoRoteOff();
-      infra = Infrared();
-      if (infra = false) {
-      // Serial.print("Infrared ");
-      //Serial.println(infra);
-      Stop();
+      if (!Infrared_L() || !Infrared_R()) {
+      Serial.print("Infrared Left ");
+      Serial.println(Infrared_L());
+      Serial.print("Infrared Right ");
+      Serial.println(Infrared_R());
+      drive.stopMoving();
+      //drive.moveBackward(100);
+      tone(buzPin, 100, 100); 
+      delay(500);
       }
 }
 
 // function prototypes for HTTP handlers
 void HTTP_handleRoot(void){
-  server.send(200, "text/html", "<h2>RobotoGuiodo OK </h2>");
+  server.send(200, "text/html", "RobotoGuiodo OK! ");
   //server.send(200, "text/html", MAIN_page); //pagina index.h retirada por provocar atraso nos comandos.
   if( server.hasArg("State") ){
   Serial.println(server.arg("State"));
@@ -178,7 +180,8 @@ void Forward(){
   else{ //se não, para, pensa meio segundo, sorteia um lado, vira no eixo e só continua  na velocidade minima quando encontra caminho livre.
         drive.stopMoving();
         delay(500);
-        tone(buzPin, 3000, 20);  
+        tone(buzPin, 4000, 1000);  
+        tone(buzPin, 1000, 500);  
         int turn = random(2);
             while (obstacle < 10) {
                 delay(100);
@@ -190,7 +193,7 @@ void Forward(){
                 obstacle = ping();
                 }
             }
-    drive.moveForward(70);
+    //drive.moveForward(SPEED*2);
   }  
     Serial.print("Forward "); 
     Serial.println(SPEED);
@@ -285,8 +288,9 @@ int ping(){
   return distance;
 } // END Ping
 
-boolean Infrared(){
-   // Serial.print("Infrared");
-   // Serial.println(infraredPin);
-    return analogRead(infraredPin);
-} //END Infrared
+boolean Infrared_L(){
+    return analogRead(infraredPinL);
+}
+boolean Infrared_R(){
+    return analogRead(infraredPinR);
+}
