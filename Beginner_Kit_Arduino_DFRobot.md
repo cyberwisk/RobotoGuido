@@ -1,6 +1,6 @@
 # gdrive
 
-<img src="https://user-images.githubusercontent.com/720405/210108089-32b7a259-b384-49c3-a2d3-fe07a42791e2.png" width="100">
+<img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Robotoguido_esquema.png" width="300">
 
 ## Overview
 
