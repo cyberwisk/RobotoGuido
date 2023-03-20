@@ -4,3 +4,5 @@
     Usando a biblioteca Drive na versão 1.0.0 na pasta: Drive.zip
     Aurelio Monteiro Avanzi
     04/03/2023
+
+    <link rel="alternate icon" class="js-site-favicon" type="image/png" href="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Robotoguido_esquema.png">
