@@ -5,4 +5,4 @@
     Aurelio Monteiro Avanzi
     04/03/2023
 
-    <img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Robotoguido_esquema.png" width="300">
+<img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Robotoguido_esquema.png" width="300">
