@@ -4,5 +4,8 @@
     Usando a biblioteca Drive na versão 1.0.0 na pasta: Drive.zip
     Aurelio Monteiro Avanzi
     04/03/2023
+    
+    <img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/IMG_RobotoGuido.jpg" width="300">
 
+    Esquema Eletrico:
     <img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Robotoguido_esquema.png" width="300">
