@@ -9,3 +9,8 @@
 
     Esquema Eletrico:
 <img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Robotoguido_esquema.png" width="300">
+
+App de controle para Android feito no MIT APP Inventor
+
+<img src="https://raw.githubusercontent.com/cyberwisk/RobotoGuido/main/Mit_app_inventor.png" width="300">
+http://appinventor.mit.edu/
